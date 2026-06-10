@@ -1,4 +1,7 @@
+'use strict';
+
 require('dotenv').config();
+
 const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
@@ -6,71 +9,56 @@ const jwt = require('jsonwebtoken');
 
 const { Schema, model } = mongoose;
 
+/**
+ * PROFILE PICTURE STORED IN DB (SCALABLE VERSION)
+ */
+const profilePictureSchema = new Schema(
+  {
+    data: {
+      type: Buffer,
+      required: false,
+    },
+    contentType: String,
+    size: Number,
+  },
+  { _id: false }
+);
+
 const userSchema = new Schema(
   {
-    // Basic Information
-    firstName: {
+    /* ---------------- BASIC INFO ---------------- */
+    name: {
       type: String,
-      required: [true, 'First name is required'],
+      required: true,
       trim: true,
       minlength: 2,
       maxlength: 50,
-    },
-
-    lastName: {
-      type: String,
-      required: [true, 'Last name is required'],
-      trim: true,
-      minlength: 2,
-      maxlength: 50,
+      index: true,
     },
 
     email: {
       type: String,
-      required: [true, 'Email is required'],
+      required: true,
       unique: true,
-      index: true,
-      trim: true,
       lowercase: true,
-      validate(value) {
-        if (!validator.isEmail(value)) {
-          throw new Error('Please provide a valid email');
-        }
-      },
+      trim: true,
+      index: true,
+      validate: (v) => validator.isEmail(v),
     },
 
     phone: {
       type: String,
       trim: true,
-      match: [/^\+?[\d\s\-()]+$/, 'Please provide a valid phone number'],
     },
 
     password: {
       type: String,
       required: true,
-      minlength: [8, 'Password must be at least 8 characters'],
-      trim: true,
-      validate(value) {
-        const strongPasswordRegex =
-          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-={}[\]|;:'",.<>/?]).{8,}$/;
-
-        if (!strongPasswordRegex.test(value)) {
-          throw new Error(
-            'Password must contain uppercase, lowercase, number, special character and be at least 8 characters'
-          );
-        }
-
-        if (value.toLowerCase().includes('password')) {
-          throw new Error("Password cannot contain the word 'password'");
-        }
-      },
+      minlength: 8,
     },
 
-    // Profile
-    profilePicture: {
-      data: Buffer,
-      contentType: String,
-    },
+    /* ---------------- PROFILE ---------------- */
+    profilePicture: profilePictureSchema,
 
     bio: {
       type: String,
@@ -97,31 +85,36 @@ const userSchema = new Schema(
       default: false,
     },
 
-    // Roles
+    /* ---------------- ROLE SYSTEM ---------------- */
     role: {
       type: String,
       enum: ['student', 'instructor', 'admin'],
       required: true,
+      index: true,
     },
 
-    // Account Status
-    isActive: {
-      type: Boolean,
-      default: true,
+    accountStatus: {
+      type: String,
+      enum: [
+        'active',
+        'pending_verification',
+        'suspended',
+        'deactivated',
+      ],
+      default: 'active',
+      index: true,
     },
 
     isSuspended: {
       type: Boolean,
       default: false,
+      index: true,
     },
 
     suspensionReason: String,
-
     suspensionDate: Date,
 
-    // Login Tracking
-    lastLogin: Date,
-
+    /* ---------------- SECURITY ---------------- */
     loginAttempts: {
       type: Number,
       default: 0,
@@ -129,17 +122,41 @@ const userSchema = new Schema(
 
     lockUntil: Date,
 
-    // Authentication
-    refreshToken: String,
+    tokenVersion: {
+      type: Number,
+      default: 0,
+    },
 
-    refreshTokenExpiry: Date,
+    /* ---------------- REFRESH TOKEN (DB SAFE) ---------------- */
+    currentRefreshToken: String,
+    refreshTokenVersion: {
+      type: Number,
+      default: 0,
+    },
 
-    // Social Links
-    socialLinks: {
-      linkedin: String,
-      twitter: String,
-      facebook: String,
-      instagram: String,
+    /* ---------------- PASSWORD RESET ---------------- */
+    passwordResetTokenHash: String,
+    passwordResetExpires: Date,
+
+    /* ---------------- LOGIN TRACKING ---------------- */
+    lastLogin: Date,
+    lastLoginIP: String,
+    lastLoginDevice: String,
+
+    /* ---------------- INSTRUCTOR VERIFICATION ---------------- */
+    verificationStatus: {
+      type: String,
+      enum: ['pending', 'approved', 'rejected'],
+      default: function() {
+        return this.role === 'instructor' ? 'pending' : 'approved';
+      }
+    },
+    
+    verificationRejectionReason: String,
+    verifiedAt: Date,
+    verifiedBy: {
+      type: Schema.Types.ObjectId,
+      ref: 'User'
     },
   },
   {
@@ -149,87 +166,102 @@ const userSchema = new Schema(
   }
 );
 
-// Indexes
-// userSchema.index({ role: 1 });
-// userSchema.index({ isActive: 1 });
-userSchema.index({ isSuspended: 1 });
-userSchema.index({ createdAt: -1 });
-userSchema.index({ firstName: 1, lastName: 1 });
+/* ---------------- INDEXES ---------------- */
 userSchema.index({ email: 1 }, { unique: true });
-userSchema.index({ role: 1, isActive: 1 });
+userSchema.index({ role: 1, accountStatus: 1 });
+userSchema.index({ lockUntil: 1 });
+userSchema.index({ createdAt: -1 });
+userSchema.index({ passwordResetTokenHash: 1 });
 
-// Virtuals
+/* ---------------- VIRTUALS ---------------- */
 userSchema.virtual('fullName').get(function () {
-  return `${this.firstName} ${this.lastName}`;
+  return `${this.name}`;
 });
 
 userSchema.virtual('isLocked').get(function () {
   return !!(this.lockUntil && this.lockUntil > Date.now());
 });
 
-// Password Hashing
+/* ---------------- PASSWORD HASHING ---------------- */
 userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) {
-    return next();
-  }
+  if (!this.isModified('password')) return next();
 
-  try {
-    const salt = await bcrypt.genSalt(12);
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
-  } catch (error) {
-    next(error);
-  }
+  const salt = await bcrypt.genSalt(12);
+  this.password = await bcrypt.hash(this.password, salt);
+  next();
 });
 
-// Compare Password
-userSchema.methods.comparePassword = async function (enteredPassword) {
-  return bcrypt.compare(enteredPassword, this.password);
+/* ---------------- PASSWORD CHECK ---------------- */
+userSchema.methods.comparePassword = function (password) {
+  return bcrypt.compare(password, this.password);
 };
 
-// Generate JWT
-userSchema.methods.generateAuthToken = function () {
+/* ---------------- JWT TOKENS - FIXED ---------------- */
+userSchema.methods.generateAccessToken = function () {
   return jwt.sign(
     {
       id: this._id,
       role: this.role,
+      tokenVersion: this.tokenVersion,
     },
     process.env.JWT_SECRET,
-    {
-      expiresIn: process.env.JWT_EXPIRES_IN || '7d',
-    }
+    { expiresIn: process.env.JWT_EXPIRES_IN || '15m' }
   );
 };
 
-// Get Full Name
-userSchema.methods.getFullName = function () {
-  return `${this.firstName} ${this.lastName}`;
+userSchema.methods.generateRefreshToken = function () {
+  return jwt.sign(
+    {
+      id: this._id,
+      tokenVersion: this.tokenVersion,
+    },
+    process.env.REFRESH_TOKEN_SECRET,  // ✅ FIXED: removed duplicate process.env
+    { expiresIn: process.env.REFRESH_TOKEN_EXPIRY || '30d' }
+  );
 };
 
-// Public Profile
-userSchema.methods.getPublicProfile = function () {
-  return {
-    id: this._id,
-    firstName: this.firstName,
-    lastName: this.lastName,
-    profilePicture: this.profilePicture,
-    role: this.role,
-    bio: this.bio,
-    socialLinks: this.socialLinks,
-  };
+/* ---------------- LOGIN SECURITY ---------------- */
+userSchema.methods.incLoginAttempts = async function () {
+  const MAX = 5;
+
+  if (this.lockUntil && this.lockUntil < Date.now()) {
+    this.loginAttempts = 1;
+    this.lockUntil = undefined;
+    return this.save();
+  }
+
+  this.loginAttempts += 1;
+
+  if (this.loginAttempts >= MAX) {
+    this.lockUntil = Date.now() + 30 * 60 * 1000;
+  }
+
+  return this.save();
 };
 
-// Hide Sensitive Fields
+userSchema.methods.resetLoginAttempts = function () {
+  this.loginAttempts = 0;
+  this.lockUntil = undefined;
+  return this.save();
+};
+
+/* ---------------- REFRESH TOKEN HANDLER ---------------- */
+userSchema.methods.setRefreshToken = function (token) {
+  this.currentRefreshToken = token;
+  this.refreshTokenVersion += 1;
+};
+
+/* ---------------- REMOVE SENSITIVE DATA ---------------- */
 userSchema.methods.toJSON = function () {
   const obj = this.toObject();
 
   delete obj.password;
-  delete obj.refreshToken;
+  delete obj.currentRefreshToken;
+  delete obj.passwordResetTokenHash;
+  delete obj.refreshTokenVersion;
   delete obj.__v;
 
   return obj;
 };
 
-const User = model('User', userSchema);
-
-module.exports = User;
+module.exports = model('User', userSchema);
