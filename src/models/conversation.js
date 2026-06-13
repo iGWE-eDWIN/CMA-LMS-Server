@@ -27,7 +27,7 @@ const conversationSchema = new mongoose.Schema(
       index: true,
     },
 
-    groupName: String,
+  
 
     // =====================
     // LAST MESSAGE SNAPSHOT (NO EXTRA QUERY NEEDED)
@@ -44,7 +44,11 @@ const conversationSchema = new mongoose.Schema(
       },
       createdAt: Date,
     },
-
+conversationType: {
+  type: String,
+  enum: ['direct'],
+  default: 'direct',
+},
     lastMessageAt: {
       type: Date,
       index: true,

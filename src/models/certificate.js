@@ -25,6 +25,16 @@ const certificateSchema = new mongoose.Schema(
       required: true,
     },
 
+    enrollmentId: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: 'Enrollment',
+},
+
+issuedAt: {
+  type: Date,
+  default: Date.now,
+},
+
     // =====================
     // UNIQUE IDENTIFIERS
     // =====================

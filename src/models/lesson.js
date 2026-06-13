@@ -19,9 +19,7 @@ const lessonSchema = new mongoose.Schema(
       index: true,
     },
 
-    // =====================
-    // CONTENT INFO
-    // =====================
+   
     title: {
       type: String,
       required: true,
@@ -38,18 +36,28 @@ const lessonSchema = new mongoose.Schema(
       index: true,
     },
 
-    // =====================
-    // VIDEO (OPTIMIZED STRUCTURE)
-    // =====================
+   
     video: {
       url: String,
       duration: Number,
       thumbnail: String,
     },
 
-    // =====================
-    // DOCUMENT (OPTIMIZED STRUCTURE)
-    // =====================
+ completionRule: {
+  type: String,
+  enum: [
+    'view',
+    'watch_80_percent',
+    'watch_100_percent',
+    'quiz_pass'
+  ],
+  default: 'view'
+},
+isMandatory: {
+  type: Boolean,
+  default: true,
+},
+
     document: {
       url: String,
       type: {
@@ -58,17 +66,13 @@ const lessonSchema = new mongoose.Schema(
       },
     },
 
-    // =====================
-    // TEXT CONTENT (SCALABILITY FIX)
-    // =====================
+  
     content: {
       type: String,
       select: false, // prevent heavy loads unless needed
     },
 
-    // =====================
-    // RESOURCES (LIMITED & SAFE)
-    // =====================
+   
     resources: {
       type: [
         {
@@ -84,9 +88,7 @@ const lessonSchema = new mongoose.Schema(
       default: [],
     },
 
-    // =====================
-    // LEARNING STRUCTURE
-    // =====================
+  
     learningObjectives: {
       type: [String],
       default: [],
@@ -102,26 +104,27 @@ const lessonSchema = new mongoose.Schema(
       ref: 'Assignment',
     },
 
-    // =====================
-    // LIVE CLASS
-    // =====================
-    liveClass: {
-      link: String,
-      scheduledAt: Date,
-    },
+  liveClassId: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: 'LiveClass',
+},
 
-    // =====================
-    // ORDERING SYSTEM (FIXED FOR SCALE)
-    // =====================
+   
     orderIndex: {
       type: Number,
       required: true,
       index: true,
     },
 
-    // =====================
-    // STATUS
-    // =====================
+   estimatedDurationMinutes: {
+  type: Number,
+  default: 0,
+},
+
+completionCount: {
+  type: Number,
+  default: 0,
+},
     isPublished: {
       type: Boolean,
       default: false,

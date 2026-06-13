@@ -2,16 +2,7 @@ const mongoose = require('mongoose');
 
 const enrollmentSchema = new mongoose.Schema(
   {
-    // =====================
-    // CORE RELATIONS
-    // =====================
-    studentId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Student',
-      required: true,
-      index: true,
-    },
-
+  
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
@@ -31,10 +22,15 @@ const enrollmentSchema = new mongoose.Schema(
       ref: 'Instructor',
       required: true,
     },
+enrollmentDate: {
+  type: Date,
+  default: Date.now,
+},
 
-    // =====================
-    // ENROLLMENT STATUS
-    // =====================
+liveClassAccess: {
+  type: Boolean,
+  default: true,
+},
     status: {
       type: String,
       enum: ['active', 'completed', 'dropped', 'suspended'],
@@ -58,9 +54,7 @@ const enrollmentSchema = new mongoose.Schema(
 
     completedAt: Date,
 
-    // =====================
-    // PAYMENT INFO
-    // =====================
+   
     paymentStatus: {
       type: String,
       enum: ['pending', 'paid', 'failed', 'refunded', 'free'],
@@ -78,7 +72,17 @@ const enrollmentSchema = new mongoose.Schema(
       default: 'NGN',
     },
 
-    transactionRef: String,
+   paymentId: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: 'Payment',
+},
+
+transactionReference: String,
+
+courseCompletedAutomatically: {
+  type: Boolean,
+  default: false,
+},
 
     // =====================
     // COURSE SNAPSHOT (SAFE HISTORY)
@@ -126,14 +130,19 @@ const enrollmentSchema = new mongoose.Schema(
 
 // Prevent duplicate enrollment (VERY IMPORTANT 🔥)
 enrollmentSchema.index(
-  { studentId: 1, courseId: 1 },
+
   { unique: true }
 );
 
 enrollmentSchema.index({ courseId: 1, status: 1 });
-enrollmentSchema.index({ studentId: 1, status: 1 });
+
 enrollmentSchema.index({ paymentStatus: 1 });
 
+
+enrollmentSchema.index(
+  { userId: 1, courseId: 1 },
+  { unique: true }
+);
 /* =====================
    METHODS
 ===================== */

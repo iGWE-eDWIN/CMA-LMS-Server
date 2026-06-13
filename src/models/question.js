@@ -39,6 +39,21 @@ const questionSchema = new mongoose.Schema(
       default: 1,
     },
 
+    orderIndex: {
+   type: Number,
+   default: 0
+},
+
+questionNumber: {
+  type: Number,
+  required: true,
+},
+
+marks: {
+  type: Number,
+  default: 1,
+},
+
     imageUrl: String,
   },
   { timestamps: true }
@@ -47,6 +62,15 @@ const questionSchema = new mongoose.Schema(
 /**
  * INDEX FOR FAST QUIZ LOAD
  */
-questionSchema.index({ quizId: 1, questionNumber: 1 });
+
+questionSchema.index(
+  {
+    quizId: 1,
+    questionNumber: 1,
+  },
+  {
+    unique: true,
+  }
+);
 
 module.exports = mongoose.model('Question', questionSchema);

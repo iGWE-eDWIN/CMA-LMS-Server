@@ -12,9 +12,16 @@ const moduleSchema = new mongoose.Schema(
       index: true,
     },
 
-    // =====================
-    // BASIC INFO
-    // =====================
+   estimatedCompletionTime: {
+  type: Number,
+  default: 0,
+},
+
+unlockAfterPreviousModule: {
+  type: Boolean,
+  default: true,
+},
+
     title: {
       type: String,
       required: true,
@@ -24,18 +31,14 @@ const moduleSchema = new mongoose.Schema(
 
     description: String,
 
-    // =====================
-    // ORDERING SYSTEM (FIXED FOR SCALE)
-    // =====================
+    
     orderIndex: {
       type: Number,
       required: true,
       index: true,
     },
 
-    // =====================
-    // AGGREGATED METRICS (READ-OPTIMIZED)
-    // =====================
+  
     stats: {
       totalLessons: {
         type: Number,
@@ -48,18 +51,14 @@ const moduleSchema = new mongoose.Schema(
       },
     },
 
-    // =====================
-    // STATUS
-    // =====================
+   
     isPublished: {
       type: Boolean,
       default: false,
       index: true,
     },
 
-    // =====================
-    // SOFT DELETE (IMPORTANT FOR LMS)
-    // =====================
+    
     isDeleted: {
       type: Boolean,
       default: false,
@@ -73,9 +72,7 @@ const moduleSchema = new mongoose.Schema(
   }
 );
 
-/* =====================
-   SCALABILITY INDEXES
-===================== */
+
 
 // Fast course module loading (MOST IMPORTANT)
 moduleSchema.index({ courseId: 1, orderIndex: 1 });

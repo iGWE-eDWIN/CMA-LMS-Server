@@ -88,12 +88,10 @@ const assignmentSchema = new mongoose.Schema(
     allowedFileTypes: [String],
 
     // Submissions
-    submissions: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Submission',
-      },
-    ],
+    totalSubmissions: {
+  type: Number,
+  default: 0,
+},
 
     totalSubmissions: {
       type: Number,

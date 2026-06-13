@@ -62,6 +62,21 @@ const quizSchema = new mongoose.Schema(
       default: -1,
     },
 
+    certificateRequirement: {
+  type: Boolean,
+  default: false,
+},
+
+allowReview: {
+  type: Boolean,
+  default: true,
+},
+
+questionCount: {
+  type: Number,
+  default: 0,
+},
+
     shuffleQuestions: Boolean,
     shuffleOptions: Boolean,
     showCorrectAnswers: Boolean,

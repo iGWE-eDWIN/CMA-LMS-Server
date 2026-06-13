@@ -2,13 +2,9 @@ const mongoose = require('mongoose');
 
 const transactionSchema = new mongoose.Schema(
   {
-    walletId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Wallet',
-      required: true,
-      index: true,
-    },
-
+    // =====================
+    // OWNER
+    // =====================
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
@@ -16,21 +12,37 @@ const transactionSchema = new mongoose.Schema(
       index: true,
     },
 
+    walletId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Wallet',
+      required: true,
+      index: true,
+    },
+
+    // =====================
+    // TRANSACTION TYPE
+    // =====================
     transactionType: {
       type: String,
       enum: [
-        'course_purchase',
         'wallet_funding',
-        'instructor_earning',
-        'withdrawal',
+        'course_purchase',
         'refund',
-        'admin_credit',
-        'admin_debit',
       ],
       required: true,
       index: true,
     },
 
+    direction: {
+      type: String,
+      enum: ['credit', 'debit'],
+      required: true,
+      index: true,
+    },
+
+    // =====================
+    // AMOUNT
+    // =====================
     amount: {
       type: Number,
       required: true,
@@ -39,7 +51,7 @@ const transactionSchema = new mongoose.Schema(
 
     currency: {
       type: String,
-      default: 'USD',
+      default: 'NGN',
     },
 
     description: {
@@ -47,7 +59,9 @@ const transactionSchema = new mongoose.Schema(
       maxlength: 1000,
     },
 
-    // RELATIONS
+    // =====================
+    // RELATED RECORDS
+    // =====================
     courseId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Course',
@@ -60,21 +74,35 @@ const transactionSchema = new mongoose.Schema(
       index: true,
     },
 
-    withdrawalId: {
+    enrollmentId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Withdrawal',
+      ref: 'Enrollment',
       index: true,
     },
+relatedType: {
+  type: String,
+  enum: ["course", "wallet", "refund"],
+},
 
-    // STATUS (immutable concept)
+relatedId: mongoose.Schema.Types.ObjectId,
+    // =====================
+    // STATUS
+    // =====================
     status: {
       type: String,
-      enum: ['pending', 'completed', 'failed', 'reversed'],
+      enum: [
+        'pending',
+        'completed',
+        'failed',
+        'reversed',
+      ],
       default: 'pending',
       index: true,
     },
 
-    // 🔥 CRITICAL: UNIQUE ID FOR IDEMPOTENCY
+    // =====================
+    // UNIQUE REFERENCE
+    // =====================
     reference: {
       type: String,
       required: true,
@@ -82,14 +110,24 @@ const transactionSchema = new mongoose.Schema(
       index: true,
     },
 
-    // BALANCE SNAPSHOT (for audit only)
+    // =====================
+    // AUDIT TRAIL
+    // =====================
     balanceSnapshot: {
-      previous: Number,
-      new: Number,
+      previous: {
+        type: Number,
+        default: 0,
+      },
+
+      current: {
+        type: Number,
+        default: 0,
+      },
     },
 
     metadata: {
       type: mongoose.Schema.Types.Mixed,
+      default: {},
     },
 
     processedAt: Date,
@@ -100,14 +138,79 @@ const transactionSchema = new mongoose.Schema(
   }
 );
 
+/* =====================
+   IMMUTABLE RECORDS
+===================== */
+
 transactionSchema.pre('findOneAndUpdate', function () {
   throw new Error('Transactions are immutable');
 });
 
-transactionSchema.index({ reference: 1 }, { unique: true });
+transactionSchema.pre('updateOne', function () {
+  throw new Error('Transactions are immutable');
+});
 
-transactionSchema.index({ userId: 1, createdAt: -1 });
-transactionSchema.index({ walletId: 1, createdAt: -1 });
-transactionSchema.index({ userId: 1, transactionType: 1 });
-transactionSchema.index({ status: 1, createdAt: -1 });
+transactionSchema.pre('updateMany', function () {
+  throw new Error('Transactions are immutable');
+});
 
+/* =====================
+   INDEXES
+===================== */
+
+transactionSchema.index(
+  { reference: 1 },
+  { unique: true }
+);
+
+transactionSchema.index({
+  userId: 1,
+  createdAt: -1,
+});
+
+transactionSchema.index({
+  walletId: 1,
+  createdAt: -1,
+});
+
+transactionSchema.index({
+  transactionType: 1,
+  createdAt: -1,
+});
+
+transactionSchema.index({
+  status: 1,
+  createdAt: -1,
+});
+
+transactionSchema.index({
+  courseId: 1,
+  createdAt: -1,
+});
+
+/* =====================
+   METHODS
+===================== */
+
+transactionSchema.methods.markCompleted =
+  function () {
+    this.status = 'completed';
+    this.processedAt = new Date();
+  };
+
+transactionSchema.methods.markFailed =
+  function () {
+    this.status = 'failed';
+    this.processedAt = new Date();
+  };
+
+transactionSchema.methods.reverse =
+  function () {
+    this.status = 'reversed';
+    this.processedAt = new Date();
+  };
+
+module.exports = mongoose.model(
+  'Transaction',
+  transactionSchema
+);

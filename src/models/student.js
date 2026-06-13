@@ -24,36 +24,74 @@ const studentSchema = new Schema(
     },
 
     // Enrolled Courses
-    coursesEnrolled: [
+   coursesEnrolled: [
+  {
+    courseId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Course',
+    },
+
+    enrolledAt: {
+      type: Date,
+      default: Date.now,
+    },
+
+    progressPercentage: {
+      type: Number,
+      default: 0,
+    },
+
+    completedLessons: [
       {
-        courseId: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: 'Course',
-        },
-
-        enrollmentDate: {
-          type: Date,
-          default: Date.now,
-        },
-
-        completionDate: Date,
-
-        status: {
-          type: String,
-          enum: ['active', 'completed', 'dropped'],
-          default: 'active',
-        },
-
-        progressPercentage: {
-          type: Number,
-          default: 0,
-          min: 0,
-          max: 100,
-        },
-
-        lastAccessedAt: Date,
+        type: Schema.Types.ObjectId,
       },
     ],
+
+    completedModules: [
+      {
+        type: Schema.Types.ObjectId,
+      },
+    ],
+
+    status: {
+      type: String,
+      enum: [
+        'active',
+        'completed',
+        'cancelled',
+      ],
+      default: 'active',
+    },
+
+    completionDate: Date,
+  }
+],
+
+purchasedCourses: [
+  {
+    courseId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Course',
+    },
+
+    paymentId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Payment',
+    },
+
+    purchasedAt: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+],
+
+upcomingClasses: [
+  {
+    type: Schema.Types.ObjectId,
+    ref: 'LiveClass',
+  },
+],
 
     // Wishlist
     wishlistCourses: [
@@ -71,13 +109,7 @@ const studentSchema = new Schema(
       },
     ],
 
-    // Completed Lessons
-    completedLessons: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Lesson',
-      },
-    ],
+    
 
     // Preferences
     preferredLearningStyle: {

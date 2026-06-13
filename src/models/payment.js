@@ -29,17 +29,20 @@ const paymentSchema = new mongoose.Schema(
     },
 
     currency: {
-      type: String,
-      default: 'USD',
-      index: true,
-    },
+  type: String,
+  default: 'NGN',
+},
+enrollmentCreated: {
+  type: Boolean,
+  default: false,
+},
 
     // =====================
     // PAYMENT CHANNEL
     // =====================
     paymentMethod: {
       type: String,
-      enum: ['paystack', 'flutterwave', 'stripe', 'wallet'],
+      enum: ['wallet','paystack', 'flutterwave', 'stripe',],
       required: true,
       index: true,
     },

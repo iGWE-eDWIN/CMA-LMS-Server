@@ -75,42 +75,116 @@ const courseSchema = new mongoose.Schema(
     // =====================
     // INSTRUCTOR
     // =====================
-    instructor: {
+    assignedInstructor: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: 'Instructor',
+  default: null,
+  index: true,
+},
+
+createdBy: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: 'User',
+  required: true,
+},
+
+deliveryType: {
+  type: String,
+  enum: [
+    'self_paced',
+    'live',
+    'hybrid'
+  ],
+  default: 'self_paced'
+},
+
+certificateEnabled: {
+  type: Boolean,
+  default: true,
+},
+
+timetable: [
+  {
+    liveClassId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Instructor',
-      required: true,
-      index: true,
+      ref: 'LiveClass',
     },
 
+    date: Date,
+
+    title: String,
+  }
+],
+
+stats: {
+  totalEnrollments: {
+    type: Number,
+    default: 0,
+  },
+
+  totalRevenue: {
+    type: Number,
+    default: 0,
+  },
+
+  totalCertificatesIssued: {
+    type: Number,
+    default: 0,
+  }
+},
+
+assignedAt: Date,
+
+assignedBy: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: 'User',
+},
+
+assignedInstructor: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "Instructor",
+  required: true,
+  index: true,
+},
+
+isLiveCourse: {
+  type: Boolean,
+  default: true,
+  index: true,
+},
+totalLiveClasses: {
+  type: Number,
+  default: 0,
+},
     // =====================
     // CONTENT STRUCTURE
     // =====================
-    modules: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Module',
-      },
-    ],
+    // modules: [
+    //   {
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: 'Module',
+    //   },
+    // ],
 
-    numberOfModules: {
-      type: Number,
-      default: 0,
-    },
+    // numberOfModules: {
+    //   type: Number,
+    //   default: 0,
+    // },
 
-    numberOfLessons: {
-      type: Number,
-      default: 0,
-    },
+    // numberOfLessons: {
+    //   type: Number,
+    //   default: 0,
+    // },
 
-    numberOfAssignments: {
-      type: Number,
-      default: 0,
-    },
+    // numberOfAssignments: {
+    //   type: Number,
+    //   default: 0,
+    // },
 
-    numberOfQuizzes: {
-      type: Number,
-      default: 0,
-    },
+    // numberOfQuizzes: {
+    //   type: Number,
+    //   default: 0,
+    // },
 
     // =====================
     // PRICING
@@ -167,34 +241,65 @@ const courseSchema = new mongoose.Schema(
       default: false,
     },
 
-    requiresFinalAssessment: {
-      type: Boolean,
-      default: false,
-    },
+    completionPercentageRequired: {
+  type: Number,
+  default: 100,
+},
 
+    minimumCompletionPercentage: {
+  type: Number,
+  default: 100,
+},
+
+notifyInstructorOnEnrollment: {
+  type: Boolean,
+  default: true,
+},
+
+notifyStudentOnEnrollment: {
+  type: Boolean,
+  default: true,
+},
+
+visibility: {
+  type: String,
+  enum: [
+    'public',
+    'private',
+    'unlisted',
+  ],
+  default: 'public',
+},
+
+isDeleted: {
+  type: Boolean,
+  default: false,
+},
+
+deletedAt: Date,
     // =====================
     // LIFECYCLE / STATUS (CLEAN SYSTEM)
     // =====================
-    status: {
-      type: String,
-      enum: ['draft', 'pending', 'published', 'rejected', 'archived'],
-      default: 'draft',
-      index: true,
-    },
+    // status: {
+    //   type: String,
+    //   enum: ['draft', 'pending', 'published', 'rejected', 'archived'],
+    //   default: 'draft',
+    //   index: true,
+    // },
 
-    isApproved: {
-      type: Boolean,
-      default: false,
-    },
+    // isApproved: {
+    //   type: Boolean,
+    //   default: false,
+    // },
 
-    approvedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-    },
+    // approvedBy: {
+    //   type: mongoose.Schema.Types.ObjectId,
+    //   ref: 'User',
+    // },
 
-    approvalDate: Date,
+    // approvalDate: Date,
 
-    rejectionReason: String,
+    // rejectionReason: String,
 
     publishedAt: Date,
 
@@ -240,6 +345,56 @@ const courseSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+
+    certificateEnabled: {
+  type: Boolean,
+  default: true,
+},
+
+certificateTemplate: {
+  type: String,
+  default: 'default',
+},
+
+liveClasses: [
+  {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'LiveClass',
+  },
+],
+
+courseSchedule: {
+  startDate: Date,
+
+  endDate: Date,
+
+  timezone: {
+    type: String,
+    default: 'Africa/Lagos',
+  },
+},
+
+maxStudents: {
+  type: Number,
+  default: 0,
+},
+
+totalCertificatesIssued: {
+  type: Number,
+  default: 0,
+},
+
+totalLiveClasses: {
+  type: Number,
+  default: 0,
+},
+
+activeStudents: {
+  type: Number,
+  default: 0,
+},
+
+
   },
   {
     timestamps: true,
@@ -258,12 +413,20 @@ courseSchema.index({ createdAt: -1 });
 ===================== */
 courseSchema.pre('save', function (next) {
   if (!this.slug) {
-    this.slug = this.title
-      .toLowerCase()
-      .replace(/[^\w\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-');
+    const random =
+      Math.random()
+        .toString(36)
+        .substring(2, 8);
+
+    this.slug =
+      `${this.title}`
+        .toLowerCase()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/\s+/g, '-')
+        + '-' +
+      random;
   }
+
   next();
 });
 

@@ -32,31 +32,54 @@ const instructorSchema = new Schema(
       },
     ],
 
+    assignedCourses: [
+  {
+    type: Schema.Types.ObjectId,
+    ref: 'Course',
+  },
+],
+
+scheduledClasses: [
+  {
+    type: Schema.Types.ObjectId,
+    ref: 'LiveClass',
+  },
+],
+
     // Courses
-    coursesCreated: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Course',
-      },
-    ],
+    // coursesCreated: [
+    //   {
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: 'Course',
+    //   },
+    // ],
 
-    approvedCourses: {
-      type: Number,
-      default: 0,
-    },
+    // approvedCourses: {
+    //   type: Number,
+    //   default: 0,
+    // },
 
-    rejectedCourses: {
-      type: Number,
-      default: 0,
-    },
+    // rejectedCourses: {
+    //   type: Number,
+    //   default: 0,
+    // },
 
     // Live Classes
-    liveClasses: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'LiveClass',
-      },
-    ],
+    // liveClasses: [
+    //   {
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: 'LiveClass',
+    //   },
+    // ],
+totalCourses: {
+  type: Number,
+  default: 0,
+},
+
+totalActiveStudents: {
+  type: Number,
+  default: 0,
+},
 
     totalStudents: {
       type: Number,
@@ -80,36 +103,11 @@ const instructorSchema = new Schema(
       default: 0,
     },
 
-    // Wallet
-    walletId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Wallet',
-    },
-
-    // Banking
-    bankAccount: {
-      bankName: String,
-
-      accountNumber: String,
-
-      accountHolderName: String,
-
-      swiftCode: String,
-
-      routingNumber: String,
-
-      accountType: {
-        type: String,
-        enum: ['checking', 'savings'],
-        default: 'checking',
-      },
-    },
-
     // Instructor Approval
     verificationStatus: {
       type: String,
       enum: ['pending', 'approved', 'rejected'],
-      default: 'pending',
+      default: 'approved',
     },
 
     verificationDocument: String,
@@ -119,40 +117,6 @@ const instructorSchema = new Schema(
     verifiedAt: Date,
 
     verificationNotes: String,
-
-    // Earnings
-    totalEarnings: {
-      type: Number,
-      default: 0,
-      min: 0,
-    },
-
-    pendingEarnings: {
-      type: Number,
-      default: 0,
-      min: 0,
-    },
-
-    totalWithdrawn: {
-      type: Number,
-      default: 0,
-      min: 0,
-    },
-
-    commissionPercentage: {
-      type: Number,
-      default: 70,
-      min: 0,
-      max: 100,
-    },
-
-    // Withdrawals
-    withdrawalRequests: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Withdrawal',
-      },
-    ],
 
     // Preferences
     language: {
@@ -211,12 +175,8 @@ instructorSchema.index({ coursesCreated: 1 });
 instructorSchema.index({ verificationStatus: 1 });
 instructorSchema.index({ averageRating: -1 });
 
-// Add Created Course
-instructorSchema.methods.addCreatedCourse = function (courseId) {
-  if (!this.coursesCreated.includes(courseId)) {
-    this.coursesCreated.push(courseId);
-  }
-};
+
+
 
 // Update Rating
 instructorSchema.methods.updateAverageRating = function (newRating) {
@@ -230,24 +190,9 @@ instructorSchema.methods.updateAverageRating = function (newRating) {
     this.totalCourseRatings;
 };
 
-// Add Earnings
-instructorSchema.methods.addEarnings = function (amount) {
-  this.totalEarnings += amount;
-  this.pendingEarnings += amount;
-};
 
-// Process Withdrawal
-instructorSchema.methods.processWithdrawal = function (
-  amount
-) {
-  if (this.pendingEarnings >= amount) {
-    this.pendingEarnings -= amount;
-    this.totalWithdrawn += amount;
-    return true;
-  }
 
-  return false;
-};
+
 
 const Instructor = model(
   'Instructor',

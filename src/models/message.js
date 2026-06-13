@@ -12,6 +12,8 @@ const messageSchema = new mongoose.Schema(
       index: true,
     },
 
+    editedMessage: String,
+
     senderId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',

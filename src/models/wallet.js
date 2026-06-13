@@ -10,11 +10,11 @@ const walletSchema = new Schema(
       unique: true,
     },
 
-    userType: {
-      type: String,
-      enum: ['student', 'instructor'],
-      required: true,
-    },
+  userType: {
+  type: String,
+  enum: ['student'],
+  default: 'student',
+},
 
     balance: {
       type: Number,
@@ -22,16 +22,6 @@ const walletSchema = new Schema(
       min: 0,
     },
 
-    pendingBalance: {
-      type: Number,
-      default: 0,
-      min: 0,
-    },
-
-    totalEarnings: {
-      type: Number,
-      default: 0,
-    },
 
     totalSpent: {
       type: Number,
@@ -107,29 +97,7 @@ walletSchema.methods.debit = function (amount) {
   this.lastTransactionDate = new Date();
 };
 
-// Add Earnings
-walletSchema.methods.addEarnings = function (amount) {
-  this.balance += amount;
-  this.totalEarnings += amount;
-  this.lastTransactionDate = new Date();
-};
 
-// Move To Pending
-walletSchema.methods.addPendingBalance = function (amount) {
-  this.pendingBalance += amount;
-};
-
-// Release Pending Balance
-walletSchema.methods.releasePendingBalance = function (
-  amount
-) {
-  if (this.pendingBalance < amount) {
-    throw new Error('Insufficient pending balance');
-  }
-
-  this.pendingBalance -= amount;
-  this.balance += amount;
-};
 
 // Freeze Wallet
 walletSchema.methods.freezeWallet = function (reason) {

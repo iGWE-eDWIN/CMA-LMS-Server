@@ -87,21 +87,16 @@ const notificationSchema = new mongoose.Schema(
         sentAt: Date,
       },
 
-      sms: {
-        sent: { type: Boolean, default: false },
-        sentAt: Date,
-      },
+      // sms: {
+      //   sent: { type: Boolean, default: false },
+      //   sentAt: Date,
+      // },
     },
 
     // =====================
     // READ SYSTEM (FIXED FOR MULTI-DEVICE)
     // =====================
-    readBy: [
-      {
-        deviceId: String,
-        readAt: Date,
-      },
-    ],
+    
 
     isRead: {
       type: Boolean,
@@ -128,22 +123,7 @@ const notificationSchema = new mongoose.Schema(
       payload: mongoose.Schema.Types.Mixed,
     },
 
-    // =====================
-    // EXTENSIBLE METADATA (CONTROLLED)
-    // =====================
-    metadata: {
-      type: Map,
-      of: String,
-      default: {},
-    },
-
-    // =====================
-    // GROUPING (VERY IMPORTANT FOR SCALE)
-    // =====================
-    groupId: {
-      type: String,
-      index: true,
-    },
+   
 
     // =====================
     // EXPIRATION (PREVENT DB GROWTH)

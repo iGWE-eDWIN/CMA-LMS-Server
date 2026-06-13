@@ -9,12 +9,6 @@ const submissionSchema = new mongoose.Schema(
       index: true,
     },
 
-    studentId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Student',
-      required: true,
-      index: true,
-    },
 
     courseId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -23,17 +17,14 @@ const submissionSchema = new mongoose.Schema(
       index: true,
     },
 
-    // OPTIONAL: keep for quick user lookup (not required duplication logic)
+    
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       index: true,
     },
 
-    submissionText: {
-      type: String,
-      maxlength: 5000,
-    },
+    content: String,
 
     submissionStatus: {
       type: String,
@@ -41,7 +32,13 @@ const submissionSchema = new mongoose.Schema(
       default: 'submitted',
       index: true,
     },
-
+files: [
+ {
+    fileName: String,
+    fileUrl: String,
+    fileType: String
+ }
+],
     submittedAt: {
       type: Date,
       default: Date.now,
@@ -98,8 +95,10 @@ const submissionSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+
+
 submissionSchema.index(
-  { assignmentId: 1, studentId: 1 },
+  { assignmentId: 1, userId: 1 },
   { unique: true }
 );
 

@@ -59,7 +59,7 @@ const userSchema = new Schema(
 
     /* ---------------- PROFILE ---------------- */
     profilePicture: profilePictureSchema,
-
+avatarUrl: String,
     bio: {
       type: String,
       maxlength: 500,
@@ -84,7 +84,12 @@ const userSchema = new Schema(
       type: Boolean,
       default: false,
     },
+unreadNotifications: {
+  type: Number,
+  default: 0,
+},
 
+lastSeenAt: Date,
     /* ---------------- ROLE SYSTEM ---------------- */
     role: {
       type: String,
@@ -127,12 +132,7 @@ const userSchema = new Schema(
       default: 0,
     },
 
-    /* ---------------- REFRESH TOKEN (DB SAFE) ---------------- */
-    currentRefreshToken: String,
-    refreshTokenVersion: {
-      type: Number,
-      default: 0,
-    },
+    
 
     /* ---------------- PASSWORD RESET ---------------- */
     passwordResetTokenHash: String,
@@ -167,7 +167,7 @@ const userSchema = new Schema(
 );
 
 /* ---------------- INDEXES ---------------- */
-userSchema.index({ email: 1 }, { unique: true });
+// userSchema.index({ email: 1 }, { unique: true });
 userSchema.index({ role: 1, accountStatus: 1 });
 userSchema.index({ lockUntil: 1 });
 userSchema.index({ createdAt: -1 });
