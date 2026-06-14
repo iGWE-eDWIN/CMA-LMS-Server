@@ -24,6 +24,11 @@ const submissionSchema = new mongoose.Schema(
       index: true,
     },
 
+    liveClassId: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: 'LiveClass',
+},
+
     content: String,
 
     submissionStatus: {

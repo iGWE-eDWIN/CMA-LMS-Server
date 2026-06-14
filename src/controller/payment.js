@@ -12,6 +12,14 @@ class PaymentController {
    * INITIATE COURSE PAYMENT
    * =========================
    */
+
+
+  /**
+ * Alias for purchaseCourse (maintains backward compatibility)
+ */
+async initializePayment(req, res) {
+  return this.purchaseCourse(req, res);
+}
   async purchaseCourse(req, res) {
     try {
       const userId = req.user._id;
@@ -103,7 +111,7 @@ class PaymentController {
         metadata: { redirectUrl },
       });
 
-      const callbackUrl = `${process.env.BACKEND_URL}/payments/verify/${reference}`;
+      const callbackUrl = `${process.env.BACKEND_URL}/payment/verify/${reference}`;
 
       const paystack = await paystackService.initializeTransaction({
         email: student.email,
@@ -224,6 +232,67 @@ class PaymentController {
       return res.status(500).json({ message: 'Failed to fetch payments' });
     }
   }
+
+
+  async paystackWebhook(req, res) {
+  try {
+    const event = req.body;
+
+    // Verify webhook signature (optional but recommended)
+    const hash = crypto
+      .createHmac('sha512', process.env.PAYSTACK_SECRET_KEY)
+      .update(JSON.stringify(req.body))
+      .digest('hex');
+
+    if (hash !== req.headers['x-paystack-signature']) {
+      return res.status(401).send('Unauthorized');
+    }
+
+    // Handle different events
+    if (event.event === 'charge.success') {
+      const { reference } = event.data;
+      
+      // Verify payment if not already processed
+      const existingPayment = await Payment.findOne({ transactionReference: reference });
+      
+      if (existingPayment && existingPayment.status !== 'completed') {
+        const meta = event.data.metadata;
+        
+        existingPayment.status = 'completed';
+        existingPayment.paidAt = new Date();
+        existingPayment.gatewayResponse = event.data;
+        await existingPayment.save();
+
+        // Create enrollment if not exists
+        const existingEnrollment = await Enrollment.findOne({
+          userId: meta.userId,
+          courseId: meta.courseId
+        });
+
+        if (!existingEnrollment) {
+          const course = await Course.findById(meta.courseId);
+          
+          await Enrollment.create({
+            studentId: meta.userId,
+            userId: meta.userId,
+            courseId: meta.courseId,
+            instructorId: course.assignedInstructor,
+            status: 'active',
+            paymentStatus: 'paid',
+            amountPaid: existingPayment.amount,
+          });
+        }
+      }
+    }
+
+    // Acknowledge receipt of webhook
+    res.sendStatus(200);
+  } catch (err) {
+    console.error('Webhook error:', err);
+    res.status(500).send('Webhook processing failed');
+  }
 }
+}
+
 
 module.exports = new PaymentController();

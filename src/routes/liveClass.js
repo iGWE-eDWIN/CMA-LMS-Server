@@ -1,6 +1,6 @@
 const router = require('express').Router();
 
-const liveClassController = require('../models/liveClass');
+const liveClassController = require('../controller/liveClass');
 
 const {
   auth,
@@ -12,42 +12,42 @@ const {
 
 // Insructor
 router.post(
-  '/',
+  '/api/liveClass',
   auth,
   instructorOnly,
   liveClassController.scheduleLiveClass
 );
 
 router.put(
-  '/:liveClassId',
+  '/api/:liveClassId',
   auth,
   instructorOnly,
     liveClassController.updateLiveClass
 );
 
 router.patch(
-  '/:liveClassId/start',
+  '/api/:liveClassId/start',
   auth,
   instructorOnly,
     liveClassController.startLiveClass
 );
 
 router.patch(
-  '/:liveClassId/end',
+  '/api/:liveClassId/end',
   auth,
   instructorOnly,
     liveClassController.endLiveClass
 );
 
 router.delete(
-  '/:liveClassId',
+  '/api/:liveClassId',
   auth,
   instructorOnly,
     liveClassController.cancelLiveClass
 );
 
 router.get(
-  '/instructor',
+  '/api/liveClass/instructor',
   auth,
   instructorOnly,
     liveClassController.getInstructorClasses
@@ -55,15 +55,18 @@ router.get(
 
 // Students
 router.get(
-  '/course/:courseId',
+  '/api/course/:courseId',
   auth,
   studentOnly,
     liveClassController.getCourseLiveClasses
 );
 
 router.get(
-    '/live-class/:liveClassId',
+    '/api/liveClass/:liveClassId',
     auth,
     studentOnly,
     liveClassController.getLiveClass
 );
+
+
+module.exports = router;

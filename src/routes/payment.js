@@ -1,18 +1,18 @@
 const express = require('express');
 const router = express.Router();
 
-const paymentController = require('../controllers/payment');
-const { auth, studentOnly } = require('../middlewares/auth');
+const paymentController = require('../controller/payment');
+const { auth, studentOnly } = require('../middleware/auth');
 
 // =====================
 // INITIATE PAYMENT
 // Student starts payment (wallet or Paystack)
 // =====================
 router.post(
-  '/initialize',
+  '/api/payment/initialize',
   auth,
   studentOnly,
-  paymentController.initializePayment
+  paymentController.purchaseCourse
 );
 
 // =====================
@@ -20,7 +20,7 @@ router.post(
 // IMPORTANT: redirects back to mobile app via redirectUrl
 // =====================
 router.get(
-  '/verify/:reference',
+  '/payment/verify/:reference',
   paymentController.verifyPayment
 );
 
@@ -28,7 +28,7 @@ router.get(
 // GET PAYMENT HISTORY (optional but useful)
 // =====================
 router.get(
-  '/history',
+  '/api/payment/history',
   auth,
   paymentController.getUserPayments
 );

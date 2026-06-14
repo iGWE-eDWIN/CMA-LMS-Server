@@ -7,7 +7,7 @@ const validator = require('validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-const { Schema, model } = mongoose;
+const { Schema } = mongoose; // Removed 'model' since we'll use mongoose.model
 
 /**
  * PROFILE PICTURE STORED IN DB (SCALABLE VERSION)
@@ -59,7 +59,7 @@ const userSchema = new Schema(
 
     /* ---------------- PROFILE ---------------- */
     profilePicture: profilePictureSchema,
-avatarUrl: String,
+    avatarUrl: String,
     bio: {
       type: String,
       maxlength: 500,
@@ -84,12 +84,14 @@ avatarUrl: String,
       type: Boolean,
       default: false,
     },
-unreadNotifications: {
-  type: Number,
-  default: 0,
-},
+    
+    unreadNotifications: {
+      type: Number,
+      default: 0,
+    },
 
-lastSeenAt: Date,
+    lastSeenAt: Date,
+    
     /* ---------------- ROLE SYSTEM ---------------- */
     role: {
       type: String,
@@ -132,8 +134,6 @@ lastSeenAt: Date,
       default: 0,
     },
 
-    
-
     /* ---------------- PASSWORD RESET ---------------- */
     passwordResetTokenHash: String,
     passwordResetExpires: Date,
@@ -167,7 +167,6 @@ lastSeenAt: Date,
 );
 
 /* ---------------- INDEXES ---------------- */
-// userSchema.index({ email: 1 }, { unique: true });
 userSchema.index({ role: 1, accountStatus: 1 });
 userSchema.index({ lockUntil: 1 });
 userSchema.index({ createdAt: -1 });
@@ -196,7 +195,7 @@ userSchema.methods.comparePassword = function (password) {
   return bcrypt.compare(password, this.password);
 };
 
-/* ---------------- JWT TOKENS - FIXED ---------------- */
+/* ---------------- JWT TOKENS ---------------- */
 userSchema.methods.generateAccessToken = function () {
   return jwt.sign(
     {
@@ -215,7 +214,7 @@ userSchema.methods.generateRefreshToken = function () {
       id: this._id,
       tokenVersion: this.tokenVersion,
     },
-    process.env.REFRESH_TOKEN_SECRET,  // ✅ FIXED: removed duplicate process.env
+    process.env.REFRESH_TOKEN_SECRET,
     { expiresIn: process.env.REFRESH_TOKEN_EXPIRY || '30d' }
   );
 };
@@ -245,23 +244,16 @@ userSchema.methods.resetLoginAttempts = function () {
   return this.save();
 };
 
-/* ---------------- REFRESH TOKEN HANDLER ---------------- */
-userSchema.methods.setRefreshToken = function (token) {
-  this.currentRefreshToken = token;
-  this.refreshTokenVersion += 1;
-};
-
 /* ---------------- REMOVE SENSITIVE DATA ---------------- */
 userSchema.methods.toJSON = function () {
   const obj = this.toObject();
 
   delete obj.password;
-  delete obj.currentRefreshToken;
   delete obj.passwordResetTokenHash;
-  delete obj.refreshTokenVersion;
   delete obj.__v;
 
   return obj;
 };
 
-module.exports = model('User', userSchema);
+// ✅ CRITICAL FIX: Safe export to prevent OverwriteModelError
+module.exports = mongoose.models.User || mongoose.model('User', userSchema);

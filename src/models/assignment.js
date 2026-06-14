@@ -2,12 +2,28 @@ const mongoose = require('mongoose');
 
 const assignmentSchema = new mongoose.Schema(
   {
-    lessonId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Lesson',
-      required: true,
-    },
+    // lessonId: {
+    //   type: mongoose.Schema.Types.ObjectId,
+    //   ref: 'Lesson',
+    //   required: true,
+    // },
 
+    liveClassId: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: 'LiveClass',
+  required: true,
+  // index: true,
+},
+
+visibleToStudents: {
+  type: Boolean,
+  default: false,
+},
+
+isOverdue: {
+  type: Boolean,
+  default: false,
+},
     courseId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Course',
@@ -141,7 +157,8 @@ const assignmentSchema = new mongoose.Schema(
 
 // Indexes
 assignmentSchema.index({ courseId: 1 });
-assignmentSchema.index({ lessonId: 1 });
+// assignmentSchema.index({ lessonId: 1 });
+assignmentSchema.index({ liveClassId: 1 });
 assignmentSchema.index({ instructorId: 1 });
 assignmentSchema.index({ status: 1 });
 assignmentSchema.index({ dueDate: 1 });

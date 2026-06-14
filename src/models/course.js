@@ -76,115 +76,72 @@ const courseSchema = new mongoose.Schema(
     // INSTRUCTOR
     // =====================
     assignedInstructor: {
-  type: mongoose.Schema.Types.ObjectId,
-  ref: 'Instructor',
-  default: null,
-  index: true,
-},
-
-createdBy: {
-  type: mongoose.Schema.Types.ObjectId,
-  ref: 'User',
-  required: true,
-},
-
-deliveryType: {
-  type: String,
-  enum: [
-    'self_paced',
-    'live',
-    'hybrid'
-  ],
-  default: 'self_paced'
-},
-
-certificateEnabled: {
-  type: Boolean,
-  default: true,
-},
-
-timetable: [
-  {
-    liveClassId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'LiveClass',
+      ref: 'Instructor',
+      default: null,
+      index: true,
     },
 
-    date: Date,
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
 
-    title: String,
-  }
-],
+    deliveryType: {
+      type: String,
+      enum: ['self_paced', 'live', 'hybrid'],
+      default: 'self_paced'
+    },
 
-stats: {
-  totalEnrollments: {
-    type: Number,
-    default: 0,
-  },
+    certificateEnabled: {
+      type: Boolean,
+      default: true,
+    },
 
-  totalRevenue: {
-    type: Number,
-    default: 0,
-  },
+    timetable: [
+      {
+        liveClassId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'LiveClass',
+        },
+        date: Date,
+        title: String,
+      }
+    ],
 
-  totalCertificatesIssued: {
-    type: Number,
-    default: 0,
-  }
-},
+    stats: {
+      totalEnrollments: {
+        type: Number,
+        default: 0,
+      },
+      totalRevenue: {
+        type: Number,
+        default: 0,
+      },
+      totalCertificatesIssued: {
+        type: Number,
+        default: 0,
+      }
+    },
 
-assignedAt: Date,
+    assignedAt: Date,
 
-assignedBy: {
-  type: mongoose.Schema.Types.ObjectId,
-  ref: 'User',
-},
+    assignedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
 
-assignedInstructor: {
-  type: mongoose.Schema.Types.ObjectId,
-  ref: "Instructor",
-  required: true,
-  index: true,
-},
-
-isLiveCourse: {
-  type: Boolean,
-  default: true,
-  index: true,
-},
-totalLiveClasses: {
-  type: Number,
-  default: 0,
-},
-    // =====================
-    // CONTENT STRUCTURE
-    // =====================
-    // modules: [
-    //   {
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     ref: 'Module',
-    //   },
-    // ],
-
-    // numberOfModules: {
-    //   type: Number,
-    //   default: 0,
-    // },
-
-    // numberOfLessons: {
-    //   type: Number,
-    //   default: 0,
-    // },
-
-    // numberOfAssignments: {
-    //   type: Number,
-    //   default: 0,
-    // },
-
-    // numberOfQuizzes: {
-    //   type: Number,
-    //   default: 0,
-    // },
+    isLiveCourse: {
+      type: Boolean,
+      default: true,
+      index: true,
+    },
+    
+    totalLiveClasses: {
+      type: Number,
+      default: 0,
+    },
 
     // =====================
     // PRICING
@@ -215,15 +172,6 @@ totalLiveClasses: {
     discountExpiry: Date,
 
     // =====================
-    // ENROLLMENT (SCALABLE)
-    // =====================
-    totalEnrollments: {
-      type: Number,
-      default: 0,
-      index: true,
-    },
-
-    // =====================
     // ASSESSMENT RULES
     // =====================
     passingScore: {
@@ -242,64 +190,37 @@ totalLiveClasses: {
     },
 
     completionPercentageRequired: {
-  type: Number,
-  default: 100,
-},
+      type: Number,
+      default: 100,
+    },
 
     minimumCompletionPercentage: {
-  type: Number,
-  default: 100,
-},
+      type: Number,
+      default: 100,
+    },
 
-notifyInstructorOnEnrollment: {
-  type: Boolean,
-  default: true,
-},
+    notifyInstructorOnEnrollment: {
+      type: Boolean,
+      default: true,
+    },
 
-notifyStudentOnEnrollment: {
-  type: Boolean,
-  default: true,
-},
+    notifyStudentOnEnrollment: {
+      type: Boolean,
+      default: true,
+    },
 
-visibility: {
-  type: String,
-  enum: [
-    'public',
-    'private',
-    'unlisted',
-  ],
-  default: 'public',
-},
+    visibility: {
+      type: String,
+      enum: ['public', 'private', 'unlisted'],
+      default: 'public',
+    },
 
-isDeleted: {
-  type: Boolean,
-  default: false,
-},
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
 
-deletedAt: Date,
-    // =====================
-    // LIFECYCLE / STATUS (CLEAN SYSTEM)
-    // =====================
-    // status: {
-    //   type: String,
-    //   enum: ['draft', 'pending', 'published', 'rejected', 'archived'],
-    //   default: 'draft',
-    //   index: true,
-    // },
-
-    // isApproved: {
-    //   type: Boolean,
-    //   default: false,
-    // },
-
-    // approvedBy: {
-    //   type: mongoose.Schema.Types.ObjectId,
-    //   ref: 'User',
-    // },
-
-    // approvalDate: Date,
-
-    // rejectionReason: String,
+    deletedAt: Date,
 
     publishedAt: Date,
 
@@ -346,55 +267,36 @@ deletedAt: Date,
       default: 0,
     },
 
-    certificateEnabled: {
-  type: Boolean,
-  default: true,
-},
+    certificateTemplate: {
+      type: String,
+      default: 'default',
+    },
 
-certificateTemplate: {
-  type: String,
-  default: 'default',
-},
+    liveClasses: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'LiveClass',
+      },
+    ],
 
-liveClasses: [
-  {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'LiveClass',
-  },
-],
+    courseSchedule: {
+      startDate: Date,
+      endDate: Date,
+      timezone: {
+        type: String,
+        default: 'Africa/Lagos',
+      },
+    },
 
-courseSchedule: {
-  startDate: Date,
+    maxStudents: {
+      type: Number,
+      default: 0,
+    },
 
-  endDate: Date,
-
-  timezone: {
-    type: String,
-    default: 'Africa/Lagos',
-  },
-},
-
-maxStudents: {
-  type: Number,
-  default: 0,
-},
-
-totalCertificatesIssued: {
-  type: Number,
-  default: 0,
-},
-
-totalLiveClasses: {
-  type: Number,
-  default: 0,
-},
-
-activeStudents: {
-  type: Number,
-  default: 0,
-},
-
-
+    activeStudents: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,
@@ -404,8 +306,8 @@ activeStudents: {
 /* =====================
    INDEXES (SCALABILITY)
 ===================== */
-courseSchema.index({ category: 1, status: 1 });
-courseSchema.index({ instructor: 1, status: 1 });
+courseSchema.index({ category: 1 });
+courseSchema.index({ assignedInstructor: 1 });
 courseSchema.index({ createdAt: -1 });
 
 /* =====================
@@ -413,20 +315,12 @@ courseSchema.index({ createdAt: -1 });
 ===================== */
 courseSchema.pre('save', function (next) {
   if (!this.slug) {
-    const random =
-      Math.random()
-        .toString(36)
-        .substring(2, 8);
-
-    this.slug =
-      `${this.title}`
+    const random = Math.random().toString(36).substring(2, 8);
+    this.slug = `${this.title}`
         .toLowerCase()
         .replace(/[^\w\s-]/g, '')
-        .replace(/\s+/g, '-')
-        + '-' +
-      random;
+        .replace(/\s+/g, '-') + '-' + random;
   }
-
   next();
 });
 
@@ -434,37 +328,19 @@ courseSchema.pre('save', function (next) {
    METHODS
 ===================== */
 
-// Publish course
-courseSchema.methods.publish = function () {
-  this.status = 'published';
-  this.isApproved = true;
-  this.publishedAt = new Date();
-};
-
-// Reject course
-courseSchema.methods.reject = function (reason) {
-  this.status = 'rejected';
-  this.rejectionReason = reason;
-};
-
 // Apply discount
 courseSchema.methods.getDiscountedPrice = function () {
   if (!this.discountPercentage) return this.price;
-
-  const discounted =
-    this.price - (this.price * this.discountPercentage) / 100;
-
+  const discounted = this.price - (this.price * this.discountPercentage) / 100;
   return Math.max(discounted, 0);
 };
 
 // Update rating (NO embedded reviews)
 courseSchema.methods.updateRating = function (newRating) {
   const total = this.rating.average * this.rating.count;
-
   this.rating.count += 1;
-
-  this.rating.average =
-    (total + newRating) / this.rating.count;
+  this.rating.average = (total + newRating) / this.rating.count;
 };
 
-module.exports = mongoose.model('Course', courseSchema);
+// IMPORTANT: Safe model export to prevent OverwriteModelError
+module.exports = mongoose.models.Course || mongoose.model('Course', courseSchema);

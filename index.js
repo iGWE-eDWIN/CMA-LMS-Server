@@ -11,6 +11,15 @@ const { v4: uuidv4 } = require('uuid');
 
 const { connectDB } = require('./src/db/mongoose');
 const authRoutes = require('./src/routes/auth');
+const courseRoutes = require('./src/routes/course');
+const enrollmentRoutes = require('./src/routes/enrollment');
+const liveClassRoutes = require('./src/routes/liveClass');
+const paymentRoutes = require('./src/routes/payment');
+const notificationRoutes = require('./src/routes/notification');
+const walletRoutes = require('./src/routes/wallet');
+const certificateRoutes = require('./src/routes/certificate');
+const assignmentRoutes = require('./src/routes/assignment');
+const submissionRoutes = require('./src/routes/submission');
 
 // const createAdmin = require('./scripts/createAdmin');
 
@@ -183,6 +192,14 @@ app.get('/health', (req, res) => {
 
 // Routes
 app.use(authRoutes);
+app.use(courseRoutes)
+app.use(enrollmentRoutes);
+app.use(liveClassRoutes);
+app.use(paymentRoutes);
+app.use(walletRoutes);
+app.use(certificateRoutes);
+app.use(assignmentRoutes);
+app.use(submissionRoutes);
 // app.use('/api/auth', authRoutes);
 // app.use('/api/users', userRoutes);
 // app.use('/api/courses', courseRoutes);

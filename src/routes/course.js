@@ -9,49 +9,49 @@ const {
 
 // Admin only
 router.post(
-  '/',
+  '/api/course',
   auth,
   adminOnly,
   courseController.createCourse        
 );
 
 router.put(
-  '/:courseId',
+  '/api/:courseId',
   auth,
   adminOnly,
   courseController.updateCourse
 );
 
 router.patch(
-  '/:courseId/publish',
+  '/api/:courseId/publish',
   auth,
   adminOnly,
   courseController.publishCourse
 );
 
 router.patch(
-  '/:courseId/assign-instructor',
+  '/api/:courseId/assign-instructor',
   auth,
   adminOnly,
   courseController.assignInstructor
 );
 
 router.patch(
-  '/:courseId/archive',
+  '/api/:courseId/archive',
   auth,
   adminOnly,
   courseController.archiveCourse
 );
 
 router.delete(
-  '/:courseId',
+  '/api/:courseId',
   auth,
   adminOnly,
   courseController.deleteCourse
 );
 
 // Public
-router.get('/', courseController.getCourses);
-router.get('/:courseId', courseController.getCourse);
+router.get('/api/course', auth, courseController.getCourses);
+router.get('/api/:courseId', auth, courseController.getCourse);
 
 module.exports = router;
