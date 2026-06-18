@@ -2,12 +2,12 @@ const mongoose = require('mongoose');
 
 const quizSchema = new mongoose.Schema(
   {
-    lessonId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Lesson',
-      required: true,
-      index: true,
-    },
+liveClassId: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: 'LiveClass',
+  required: true,
+  index: true,
+},
 
     courseId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -105,7 +105,7 @@ questionCount: {
  * 🔥 SCALABLE INDEXES
  */
 quizSchema.index({ courseId: 1, isPublished: 1 });
-quizSchema.index({ lessonId: 1 });
+quizSchema.index({ liveClassId: 1 });
 quizSchema.index({ instructorId: 1, createdAt: -1 });
 
 module.exports = mongoose.model('Quiz', quizSchema);

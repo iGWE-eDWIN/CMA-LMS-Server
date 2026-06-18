@@ -19,28 +19,28 @@ router.post(
 );
 
 router.put(
-  '/api/:liveClassId',
+  '/api/liveClass/:liveClassId',
   auth,
   instructorOnly,
     liveClassController.updateLiveClass
 );
 
 router.patch(
-  '/api/:liveClassId/start',
+  '/api/liveClass/:liveClassId/start',
   auth,
   instructorOnly,
     liveClassController.startLiveClass
 );
 
 router.patch(
-  '/api/:liveClassId/end',
+  '/api/liveClass/:liveClassId/end',
   auth,
   instructorOnly,
     liveClassController.endLiveClass
 );
 
 router.delete(
-  '/api/:liveClassId',
+  '/api/liveClass/:liveClassId',
   auth,
   instructorOnly,
     liveClassController.cancelLiveClass
@@ -55,7 +55,7 @@ router.get(
 
 // Students
 router.get(
-  '/api/course/:courseId',
+  '/api/liveClass/course/:courseId',
   auth,
   studentOnly,
     liveClassController.getCourseLiveClasses

@@ -20,6 +20,11 @@ const walletRoutes = require('./src/routes/wallet');
 const certificateRoutes = require('./src/routes/certificate');
 const assignmentRoutes = require('./src/routes/assignment');
 const submissionRoutes = require('./src/routes/submission');
+const quizRoutes = require('./src/routes/quiz');
+const questionRoutes = require('./src/routes/question');
+const conversationRoutes = require('./src/routes/conversation');
+const messageRoutes = require('./src/routes/message');
+const adminDashboardRoutes = require('./src/routes/admin')
 
 // const createAdmin = require('./scripts/createAdmin');
 
@@ -200,6 +205,11 @@ app.use(walletRoutes);
 app.use(certificateRoutes);
 app.use(assignmentRoutes);
 app.use(submissionRoutes);
+app.use(quizRoutes);
+app.use(questionRoutes);
+app.use(conversationRoutes);
+app.use(messageRoutes);
+app.use(adminDashboardRoutes);
 // app.use('/api/auth', authRoutes);
 // app.use('/api/users', userRoutes);
 // app.use('/api/courses', courseRoutes);

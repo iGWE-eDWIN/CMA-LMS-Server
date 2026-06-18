@@ -2,6 +2,19 @@ const mongoose = require('mongoose');
 
 const quizAttemptSchema = new mongoose.Schema(
   {
+    userId: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: 'User',
+  required: true,
+  index: true,
+},
+
+studentId: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: 'Student',
+  required: true,
+  index: true,
+},
     quizId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Quiz',
@@ -58,10 +71,24 @@ timeSpentSeconds: {
 /**
  * 🔥 IMPORTANT INDEXES
  */
+quizAttemptSchema.index(
+  {
+    quizId: 1,
+    studentId: 1,
+    attemptNumber: 1,
+  },
+  { unique: true }
+);
+
+
 quizAttemptSchema.index({
-  quizId: 1,
-  userId: 1,
+  studentId: 1,
+  submittedAt: -1,
 });
 
+quizAttemptSchema.index({
+  quizId: 1,
+  submittedAt: -1,
+});
 
 module.exports = mongoose.model('QuizAttempt', quizAttemptSchema);

@@ -134,6 +134,12 @@ const userSchema = new Schema(
       default: 0,
     },
 
+    /* ---------------- REFRESH TOKEN ---------------- */
+    currentRefreshToken: {
+      type: String,
+      default: null,
+    },
+
     /* ---------------- PASSWORD RESET ---------------- */
     passwordResetTokenHash: String,
     passwordResetExpires: Date,
@@ -217,6 +223,11 @@ userSchema.methods.generateRefreshToken = function () {
     process.env.REFRESH_TOKEN_SECRET,
     { expiresIn: process.env.REFRESH_TOKEN_EXPIRY || '30d' }
   );
+};
+
+/* ---------------- REFRESH TOKEN MANAGEMENT ---------------- */
+userSchema.methods.setRefreshToken = function (token) {
+  this.currentRefreshToken = token;
 };
 
 /* ---------------- LOGIN SECURITY ---------------- */
